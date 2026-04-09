@@ -19,7 +19,7 @@ public class Plugin : BaseUnityPlugin
         CheckoutManagerEvents.OnProductScanned += CheckoutManagerEvents_OnProductScanned;
     }
 
-    private void CheckoutManagerEvents_OnProductScanned(CheckoutManager manager, Product product, float arg3)
+    private void CheckoutManagerEvents_OnProductScanned(CheckoutManager manager, Product product)
     {
         SalesNumbersManager.UpdateSalesNumbers(product.ProductType, 1);
         Log.LogInfo($"Product brand: {product.Brand}");

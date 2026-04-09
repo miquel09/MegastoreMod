@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="MegastoreSimulator.GameLibs/MegastoreSimulator.GameLibs.csproj" Id="e4a42a76-b90c-4aa3-af76-d7ca2bf257cb" />
   <Project Path="SalesNumbersPlugin/SalesNumbersPlugin.csproj" Id="c36fa23b-73a3-48a8-8c98-c6df694b60a3" />
+  <SolutionItem Path=".copilot-instructions" />
 </Solution>

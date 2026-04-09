@@ -2,5 +2,8 @@
 
 public class Customer
 {
-
+    internal Customer(global::Customer customer)
+    {
+        
+    }
 }

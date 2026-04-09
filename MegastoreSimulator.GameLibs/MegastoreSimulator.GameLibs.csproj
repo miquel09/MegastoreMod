@@ -20,7 +20,6 @@
 		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" />
 		<PackageReference Include="BepInEx.Core" Version="5.*" />
 		<PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
-		<PackageReference Include="Mapster" Version="10.0.7" />
 		<PackageReference Include="UnityEngine.Modules" Version="6000.0.64" IncludeAssets="compile" />
 	</ItemGroup>
 
@@ -42,9 +41,5 @@
 
 	<ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
 		<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="EventSystem\" />
 	</ItemGroup>
 </Project>
