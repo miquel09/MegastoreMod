@@ -16,6 +16,10 @@ This project is a modding SDK for a Unity game called Megastore Simulator
 - C# 9
 
 ## Coding Standards
+### Testing
+- Use NSubstitute for mocking/substituting
+- Use MSTest as testframework
+- Use Arrange, Act, Assert pattern
 
 ### Managers
 Each manager will have 3 classes:
