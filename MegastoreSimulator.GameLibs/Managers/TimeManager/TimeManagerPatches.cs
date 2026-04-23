@@ -34,7 +34,7 @@ internal class TimeManagerPatches
         static void Postfix(global::TimeManager __instance)
         {
             Logger.LogDebug($"### OnNewDayStart");
-            TimeManagerEvents.FireOnNewDayStart();
+            TimeManagerEvents.FireOnDayStart();
         }
     }
 }
