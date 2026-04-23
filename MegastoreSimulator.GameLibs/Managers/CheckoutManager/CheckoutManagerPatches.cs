@@ -16,7 +16,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance, float __0)
         {
-            Plugin.Logger.LogDebug($"### OnPaymentFinished");
+            Logger.LogDebug($"### OnPaymentFinished");
             var instance = new InternalCheckoutManager(__instance);
             CheckoutManagerEvents.FireOnPaymentFinished(instance, __0);
         }
@@ -28,7 +28,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance)
         {
-            Plugin.Logger.LogDebug($"### OnPaymentTaken");
+            Logger.LogDebug($"### OnPaymentTaken");
             var instance = new InternalCheckoutManager(__instance);
             CheckoutManagerEvents.FireOnPaymentTaken(instance);
         }
@@ -40,7 +40,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance)
         {
-            Plugin.Logger.LogDebug($"### OnCashPaymentTaken");
+            Logger.LogDebug($"### OnCashPaymentTaken");
             var instance = new InternalCheckoutManager(__instance);
             CheckoutManagerEvents.FireOnCashPaymentTaken(instance);
         }
@@ -52,7 +52,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance)
         {
-            Plugin.Logger.LogDebug($"### OnCardPaymentTaken");
+            Logger.LogDebug($"### OnCardPaymentTaken");
             var instance = new InternalCheckoutManager(__instance);
             CheckoutManagerEvents.FireOnCardPaymentTaken(instance);
         }
@@ -66,7 +66,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance, global::Product __0)
         {
-            Plugin.Logger.LogDebug($"### OnProductScanned");
+            Logger.LogDebug($"### OnProductScanned");
             var instance = new InternalCheckoutManager(__instance);
             var product = new InternalProduct(__0);
             CheckoutManagerEvents.FireOnProductScanned(instance, product);
@@ -77,9 +77,9 @@ internal class CheckoutManagerPatches
     internal static class OnProductsPlacedPatches
     {
         [HarmonyPostfix]
-        static void Postfix(global::CheckoutManager __instance, List<global::Product> __0)
+        static void Postfix(global::CheckoutManager __instance, IReadOnlyCollection<global::Product> __0)
         {
-            Plugin.Logger.LogDebug($"### OnProductsPlaced");
+            Logger.LogDebug($"### OnProductsPlaced");
             var instance = new InternalCheckoutManager(__instance);
             var products = __0.Select(p => new InternalProduct(p)).ToList();
             CheckoutManagerEvents.FireOnPlaceProducts(instance, products);
@@ -92,10 +92,10 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance, List<global::Product> __0, float __1)
         {
-            Plugin.Logger.LogDebug($"### OnMovedToBag");
+            Logger.LogDebug($"### OnMovedToBag");
             var instance = new InternalCheckoutManager(__instance);
             var products = __0.Select(p => new InternalProduct(p)).ToList();
-            CheckoutManagerEvents.FireOnMovedToBag(instance, products, __1);
+            CheckoutManagerEvents.FireOnMovedToBag(instance, products);
         }
     }
     #endregion
@@ -107,7 +107,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance, global::Customer __0)
         {
-            Plugin.Logger.LogDebug($"### OnCustomerJoinedQueue");
+            Logger.LogDebug($"### OnCustomerJoinedQueue");
             var instance = new InternalCheckoutManager(__instance);
             var customer = new InternalCustomer(__0);
             CheckoutManagerEvents.FireOnCustomerJoinedQueue(instance, customer);
@@ -120,7 +120,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance)
         {
-            Plugin.Logger.LogDebug($"### OnCustomerLeftQueue");
+            Logger.LogDebug($"### OnCustomerLeftQueue");
             var instance = new InternalCheckoutManager(__instance);
             CheckoutManagerEvents.FireOnCustomerLeftQueue(instance);
         }
@@ -134,7 +134,7 @@ internal class CheckoutManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::CheckoutManager __instance)
         {
-            Plugin.Logger.LogDebug($"### OnCheckoutStatusChanged");
+            Logger.LogDebug($"### OnCheckoutStatusChanged");
             var instance = new InternalCheckoutManager(__instance);
             CheckoutManagerEvents.FireOnCheckoutStatusChanged(instance);
         }

@@ -1,13 +1,29 @@
-﻿namespace MegastoreSimulator.GameLibs.Managers.TimeManager;
+﻿using System;
 
-public class TimeManager
+namespace MegastoreSimulator.GameLibs.Managers.TimeManager;
+
+public static class TimeManager
 {
-    private readonly global::TimeManager _instance;
-
-    public int CurrentDay => _instance.CurrentDay;
-
-    internal TimeManager(global::TimeManager instance)
+    private static global::TimeManager _instance;
+    internal static global::TimeManager Instance
     {
-        _instance = instance;
+        private get
+        {
+            if (_instance == null)
+                throw new InvalidOperationException("TimeManager is not yet initialised");
+            return _instance;
+        }
+        set
+        {
+            _instance ??= value;
+        }
+    }
+
+    public static int CurrentDay
+    {
+        get
+        {
+            return Instance.CurrentDay; 
+        }
     }
 }

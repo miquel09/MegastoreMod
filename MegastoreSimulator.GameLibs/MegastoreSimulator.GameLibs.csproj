@@ -36,6 +36,9 @@
 			<HintPath>C:\Program Files (x86)\Steam\steamapps\common\Megastore Simulator\Megastore Simulator_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="Unity.RenderPipelines.Core.Runtime">
+		  <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Megastore Simulator\Megastore Simulator_Data\Managed\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+		</Reference>
 		<Reference Include="Unity.TextMeshPro">
 			<HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Megastore Simulator\Megastore Simulator_Data\Managed\Unity.TextMeshPro.dll</HintPath>
 			<Private>false</Private>
