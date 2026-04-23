@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using MegastoreSimulator.GameLibs.Managers.CheckoutManager;
-using MegastoreSimulator.GameLibs.Managers.ComputerUiManager;
 using MegastoreSimulator.GameLibs.Models;
 using SalesNumbersPlugin.Managers;
 
@@ -16,33 +15,33 @@ public class Plugin : BaseUnityPlugin
     private void Awake()
     {
         Log = Logger;
-        ComputerUiManager.AddButton(new ButtonDefinition()
-        {
-            ButtonName = "SalesOverviewButton",
-            DisplayText = "Sales Overview",
-            OnClicked = ShoppingButtonClicked
-        });
+        //ComputerUiManager.AddButton(new ButtonDefinition()
+        //{
+        //    ButtonName = "SalesOverviewButton",
+        //    DisplayText = "Sales Overview",
+        //    OnClicked = ShoppingButtonClicked
+        //});
 
-        ComputerUiManager.AddButton(new ButtonDefinition()
-        {
-            ButtonName = "SalesOverviewButton2",
-            DisplayText = "Sales Overview",
-            OnClicked = ShoppingButtonClicked
-        });
+        //ComputerUiManager.AddButton(new ButtonDefinition()
+        //{
+        //    ButtonName = "SalesOverviewButton2",
+        //    DisplayText = "Sales Overview",
+        //    OnClicked = ShoppingButtonClicked
+        //});
 
-        ComputerUiManager.AddButton(new ButtonDefinition()
-        {
-            ButtonName = "SalesOverviewButton3",
-            DisplayText = "Sales Overview",
-            OnClicked = ShoppingButtonClicked
-        });
+        //ComputerUiManager.AddButton(new ButtonDefinition()
+        //{
+        //    ButtonName = "SalesOverviewButton3",
+        //    DisplayText = "Sales Overview",
+        //    OnClicked = ShoppingButtonClicked
+        //});
 
-        ComputerUiManager.AddButton(new ButtonDefinition()
-        {
-            ButtonName = "SalesOverviewButton4",
-            DisplayText = "Sales Overview",
-            OnClicked = ShoppingButtonClicked
-        });
+        //ComputerUiManager.AddButton(new ButtonDefinition()
+        //{
+        //    ButtonName = "SalesOverviewButton4",
+        //    DisplayText = "Sales Overview",
+        //    OnClicked = ShoppingButtonClicked
+        //});
 
 
         CheckoutManagerEvents.OnProductScanned += CheckoutManagerEvents_OnProductScanned;

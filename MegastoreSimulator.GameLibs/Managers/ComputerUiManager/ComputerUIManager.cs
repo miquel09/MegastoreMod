@@ -1,16 +1,16 @@
-﻿using MegastoreSimulator.GameLibs.Models;
-using System.Collections.Generic;
+﻿//using MegastoreSimulator.GameLibs.Models;
+//using System.Collections.Generic;
 
-namespace MegastoreSimulator.GameLibs.Managers.ComputerUiManager;
+//namespace MegastoreSimulator.GameLibs.Managers.ComputerUiManager;
 
-public static class ComputerUiManager
-{
-    private readonly static List<ButtonDefinition> _buttonDefinitions = [];
+//public static class ComputerUiManager
+//{
+//    private readonly static List<ButtonDefinition> _buttonDefinitions = [];
 
-    internal static List<ButtonDefinition> ButtonDefinitions => _buttonDefinitions;
+//    internal static List<ButtonDefinition> ButtonDefinitions => _buttonDefinitions;
 
-    public static void AddButton(ButtonDefinition buttonDefinition)
-    {
-        _buttonDefinitions.Add(buttonDefinition);
-    }
-}
+//    public static void AddButton(ButtonDefinition buttonDefinition)
+//    {
+//        _buttonDefinitions.Add(buttonDefinition);
+//    }
+//}
