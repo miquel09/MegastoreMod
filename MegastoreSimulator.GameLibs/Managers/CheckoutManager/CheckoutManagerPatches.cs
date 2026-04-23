@@ -60,7 +60,7 @@ internal class CheckoutManagerPatches
     #endregion
 
     #region Products and Scanning
-    [HarmonyPatch(typeof(global::CheckoutManager), nameof(global::CheckoutManager.ScanProduct))]
+    [HarmonyPatch(typeof(global::CheckoutManager), nameof(global::CheckoutManager.ScanProduct), [typeof(global::Product)])]
     internal static class OnProductScannedPatches
     {
         [HarmonyPostfix]
