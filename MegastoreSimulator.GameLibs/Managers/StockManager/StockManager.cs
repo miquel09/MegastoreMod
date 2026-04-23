@@ -16,7 +16,7 @@ public static class StockManager
         }
         set
         {
-            _instance = value;
+            _instance ??= value;
         }
     }
 

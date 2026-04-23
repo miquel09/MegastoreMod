@@ -15,7 +15,7 @@ public static class TimeManager
         }
         set
         {
-            _instance = value;
+            _instance ??= value;
         }
     }
 
