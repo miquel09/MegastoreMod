@@ -20,6 +20,11 @@ public static class StockManager
         }
     }
 
+    public static int GetProductCount()
+    {
+        return Instance.GetProductCount();
+    }
+
     public static int GetAvailableStockOnShelves(InternalProductType productType)
     {
         return Instance.GetAvailableStockOnShelves((ProductType)(int)productType);
