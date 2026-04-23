@@ -11,19 +11,19 @@ internal class TimeManagerPatches
         [HarmonyPostfix]
         static void Postfix(global::TimeManager __instance)
         {
-            Plugin.Logger.LogDebug($"### OnDayEnd");
+            Logger.LogDebug($"### OnDayEnd");
             var instance = new InternalTimeManager(__instance);
             TimeManagerEvents.FireOnDayEnd(instance);
         }
     }
 
     [HarmonyPatch(typeof(global::TimeManager), nameof(global::TimeManager.StartTheNewDay))]
-    internal static class OnPaymentTakenPatches
+    internal static class OnStartTheNewDay
     {
         [HarmonyPostfix]
         static void Postfix(global::TimeManager __instance)
         {
-            Plugin.Logger.LogDebug($"### OnNewDayStart");
+            Logger.LogDebug($"### OnNewDayStart");
             var instance = new InternalTimeManager(__instance);
             TimeManagerEvents.FireOnNewDayStart(instance);
         }

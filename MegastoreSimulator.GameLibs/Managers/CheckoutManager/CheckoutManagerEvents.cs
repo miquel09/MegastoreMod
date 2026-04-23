@@ -32,12 +32,12 @@ public static class CheckoutManagerEvents
     internal static void FireOnProductScanned(InternalCheckoutManager self, InternalProduct product) => OnProductScanned?.Invoke(self, product);
 
     /// <summary>Fired when products are placed on the checkout counter. Subscribers receive the checkout manager instance and the list of placed products.</summary>
-    public static event Action<InternalCheckoutManager, List<InternalProduct>> OnProductsPlaced;
-    internal static void FireOnPlaceProducts(InternalCheckoutManager self, List<InternalProduct> products) => OnProductsPlaced?.Invoke(self, products);
+    public static event Action<InternalCheckoutManager, IReadOnlyList<InternalProduct>> OnProductsPlaced;
+    internal static void FireOnPlaceProducts(InternalCheckoutManager self, IReadOnlyList<InternalProduct> products) => OnProductsPlaced?.Invoke(self, products);
     
     /// <summary>Fired when scanned products are moved to the customer's bag. Subscribers receive the checkout manager instance, the list of products being bagged, and a speed multiplier for animation.</summary>
-    public static event Action<InternalCheckoutManager, List<InternalProduct>, float> OnMovedToBag;
-    internal static void FireOnMovedToBag(InternalCheckoutManager self, List<InternalProduct> products, float speedMultiplier) => OnMovedToBag?.Invoke(self, products, speedMultiplier);
+    public static event Action<InternalCheckoutManager, IReadOnlyList<InternalProduct>> OnMovedToBag;
+    internal static void FireOnMovedToBag(InternalCheckoutManager self, IReadOnlyList<InternalProduct> products) => OnMovedToBag?.Invoke(self, products);
     #endregion
 
     #region Queue and Customer

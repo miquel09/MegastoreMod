@@ -1,6 +1,6 @@
 ﻿namespace MegastoreSimulator.GameLibs.Managers.TimeManager;
 
-public class TimeManager
+public sealed class TimeManager
 {
     private readonly global::TimeManager _instance;
 
