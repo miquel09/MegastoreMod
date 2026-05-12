@@ -1,0 +1,273 @@
+# .github/workflows/upload-to-nexus.yml
+#
+# Triggered when a GitHub Release is published.
+# The release tag (e.g. "v1.2.3") is used as the mod version on Nexus.
+#
+# Required repository secrets:
+#   NEXUS_API_KEY     — your personal Nexus Mods API key (nexusmods.com → account → API Keys)
+#
+# Required repository variables (Settings → Secrets and variables → Variables):
+#   NEXUS_GAME_DOMAIN — the Nexus game identifier, e.g. "supermarketsimulator"
+#   NEXUS_MOD_ID      — the numeric mod ID from your mod's Nexus page URL
+#   MOD_NAME          — display name used for the uploaded file, e.g. "MegastoreSimulator.GameLibs"
+
+name: Upload Mod to Nexus Mods
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-upload:
+    name: Build and Upload to Nexus
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------------ #
+      # 1. Checkout
+      # ------------------------------------------------------------------ #
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------ #
+      # 2. Setup .NET
+      #    BepInEx mods commonly target net46 / net48 but the SDK can still
+      #    build them on the ubuntu runner.
+      # ------------------------------------------------------------------ #
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"   # SDK version — the TFM in your .csproj controls the output
+
+      # ------------------------------------------------------------------ #
+      # 3. Restore & Build (Release)
+      # ------------------------------------------------------------------ #
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build (Release)
+        run: dotnet build --configuration Release --no-restore
+
+      # ------------------------------------------------------------------ #
+      # 4. Collect build output and create the release ZIP
+      #
+      #    Adjust the glob below if your .csproj outputs to a different path,
+      #    or if you need to bundle extra assets (e.g. README, config files).
+      # ------------------------------------------------------------------ #
+      - name: Collect build artifacts
+        id: collect
+        shell: bash
+        run: |
+          # Strip leading 'v' from the tag so version is "1.2.3" not "v1.2.3"
+          VERSION="${GITHUB_REF_NAME#v}"
+          MOD_NAME="${{ vars.MOD_NAME }}"
+          ZIP_NAME="${MOD_NAME}-${VERSION}.zip"
+
+          mkdir -p staging
+
+          # Copy all Release DLLs — excludes test assemblies and ref assemblies
+          find . -path "*/bin/Release/*" -name "*.dll" \
+            ! -name "*.Tests.dll" \
+            ! -path "*/ref/*" \
+            -exec cp {} staging/ \;
+
+          # Optionally include a README if one exists
+          [ -f README.md ] && cp README.md staging/
+
+          zip -j "${ZIP_NAME}" staging/*
+
+          echo "zip_name=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}"   >> "$GITHUB_OUTPUT"
+          echo "Built: ${ZIP_NAME}"
+          ls -lh "${ZIP_NAME}"
+
+      # ------------------------------------------------------------------ #
+      # 5. Upload ZIP as a GitHub Release asset (handy for direct downloads)
+      # ------------------------------------------------------------------ #
+      - name: Attach ZIP to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.collect.outputs.zip_name }}
+
+      # ------------------------------------------------------------------ #
+      # 6. Upload to Nexus Mods via their chunked-upload API
+      #
+      #    The Nexus upload flow is three-phase:
+      #      a) Split the file into chunks and POST each one individually.
+      #      b) Once all chunks are accepted, POST the "add_file" finaliser
+      #         with version, changelog, and category metadata.
+      #
+      #    Nexus API docs: https://app.swaggerhub.com/apis-docs/NexusMods/nexus-mods_public_api/1.0
+      # ------------------------------------------------------------------ #
+      - name: Upload to Nexus Mods
+        shell: python3 {0}
+        env:
+          NEXUS_API_KEY:    ${{ secrets.NEXUS_API_KEY }}
+          NEXUS_GAME_DOMAIN: ${{ vars.NEXUS_GAME_DOMAIN }}
+          NEXUS_MOD_ID:     ${{ vars.NEXUS_MOD_ID }}
+          MOD_NAME:         ${{ vars.MOD_NAME }}
+          ZIP_NAME:         ${{ steps.collect.outputs.zip_name }}
+          VERSION:          ${{ steps.collect.outputs.version }}
+          # Optional: set NEXUS_FILE_CATEGORY to one of:
+          #   main / update / optional / old_version / miscellaneous  (default: main)
+          NEXUS_FILE_CATEGORY: "main"
+          # Optional: multiline changelog sourced from the GitHub Release body
+          RELEASE_BODY:     ${{ github.event.release.body }}
+        run: |
+          import hashlib
+          import math
+          import os
+          import sys
+          import time
+          import urllib.request
+          import urllib.error
+          import json
+
+          # ── Configuration ────────────────────────────────────────────────
+          API_KEY      = os.environ["NEXUS_API_KEY"]
+          GAME_DOMAIN  = os.environ["NEXUS_GAME_DOMAIN"]
+          MOD_ID       = os.environ["NEXUS_MOD_ID"]
+          MOD_NAME     = os.environ["MOD_NAME"]
+          ZIP_PATH     = os.environ["ZIP_NAME"]
+          VERSION      = os.environ["VERSION"]
+          CATEGORY     = os.environ.get("NEXUS_FILE_CATEGORY", "main")
+          CHANGELOG    = os.environ.get("RELEASE_BODY", "").strip() or f"Version {VERSION}"
+
+          BASE_URL     = "https://api.nexusmods.com/v1"
+          CHUNK_SIZE   = 10 * 1024 * 1024  # 10 MB — Nexus recommends ≤ 10 MB per chunk
+          MAX_RETRIES  = 3
+
+          # ── Helpers ──────────────────────────────────────────────────────
+          def nexus_request(method: str, path: str, data=None, content_type="application/json") -> dict:
+              url = f"{BASE_URL}{path}"
+              body = json.dumps(data).encode() if data else None
+              req = urllib.request.Request(
+                  url,
+                  data=body,
+                  method=method,
+                  headers={
+                      "apikey":       API_KEY,
+                      "Content-Type": content_type,
+                      "Accept":       "application/json",
+                  },
+              )
+              for attempt in range(1, MAX_RETRIES + 1):
+                  try:
+                      with urllib.request.urlopen(req) as resp:
+                          return json.loads(resp.read())
+                  except urllib.error.HTTPError as exc:
+                      body_text = exc.read().decode(errors="replace")
+                      print(f"  HTTP {exc.code} on attempt {attempt}: {body_text}", flush=True)
+                      if attempt == MAX_RETRIES or exc.code < 500:
+                          raise
+                      time.sleep(2 ** attempt)
+
+          def md5(path: str) -> str:
+              h = hashlib.md5()
+              with open(path, "rb") as fh:
+                  for block in iter(lambda: fh.read(65536), b""):
+                      h.update(block)
+              return h.hexdigest()
+
+          # ── Phase A: chunked upload ───────────────────────────────────────
+          file_size  = os.path.getsize(ZIP_PATH)
+          chunk_count = math.ceil(file_size / CHUNK_SIZE)
+          file_hash   = md5(ZIP_PATH)
+          file_name   = os.path.basename(ZIP_PATH)
+
+          print(f"Uploading '{file_name}'  ({file_size:,} bytes, {chunk_count} chunk(s), md5={file_hash})", flush=True)
+
+          upload_id = None  # Nexus returns the same UUID for every chunk of a session
+
+          with open(ZIP_PATH, "rb") as fh:
+              for chunk_index in range(chunk_count):
+                  chunk_data    = fh.read(CHUNK_SIZE)
+                  actual_chunk  = len(chunk_data)
+
+                  print(f"  Chunk {chunk_index + 1}/{chunk_count}  ({actual_chunk:,} bytes) …", flush=True)
+
+                  # Build multipart/form-data by hand (stdlib only)
+                  boundary = "----NexusBoundary"
+                  parts = []
+
+                  def field(name: str, value: str) -> bytes:
+                      return (
+                          f"--{boundary}\r\n"
+                          f'Content-Disposition: form-data; name="{name}"\r\n\r\n'
+                          f"{value}\r\n"
+                      ).encode()
+
+                  parts.append(field("expires_at",         str(int(time.time()) + 3600)))
+                  parts.append(field("chunk_number",       str(chunk_index)))
+                  parts.append(field("chunk_count",        str(chunk_count)))
+                  parts.append(field("chunk_size",         str(CHUNK_SIZE)))
+                  parts.append(field("file_size",          str(file_size)))
+                  parts.append(field("hash",               file_hash))
+                  parts.append(field("original_file_name", file_name))
+
+                  # Binary file chunk
+                  parts.append((
+                      f"--{boundary}\r\n"
+                      f'Content-Disposition: form-data; name="uploaded_file"; filename="{file_name}"\r\n'
+                      f"Content-Type: application/octet-stream\r\n\r\n"
+                  ).encode() + chunk_data + b"\r\n")
+
+                  parts.append(f"--{boundary}--\r\n".encode())
+                  body = b"".join(parts)
+
+                  url = f"{BASE_URL}/games/{GAME_DOMAIN}/mods/{MOD_ID}/files/upload_chunk.json"
+                  req = urllib.request.Request(
+                      url,
+                      data=body,
+                      method="POST",
+                      headers={
+                          "apikey":       API_KEY,
+                          "Content-Type": f"multipart/form-data; boundary={boundary}",
+                          "Accept":       "application/json",
+                      },
+                  )
+
+                  for attempt in range(1, MAX_RETRIES + 1):
+                      try:
+                          with urllib.request.urlopen(req) as resp:
+                              result = json.loads(resp.read())
+                              upload_id = result.get("uuid", upload_id)
+                          break
+                      except urllib.error.HTTPError as exc:
+                          body_text = exc.read().decode(errors="replace")
+                          print(f"    HTTP {exc.code} on attempt {attempt}: {body_text}", flush=True)
+                          if attempt == MAX_RETRIES or exc.code < 500:
+                              raise
+                          time.sleep(2 ** attempt)
+
+          if not upload_id:
+              print("ERROR: No upload UUID returned by Nexus — cannot finalise.", flush=True)
+              sys.exit(1)
+
+          print(f"All chunks uploaded. Upload UUID: {upload_id}", flush=True)
+
+          # ── Phase B: finalise — add the file to the mod ──────────────────
+          print("Finalising upload …", flush=True)
+
+          payload = {
+              "file_name":    file_name,
+              "name":         f"{MOD_NAME} {VERSION}",
+              "version":      VERSION,
+              "category_name": CATEGORY,
+              "description":  CHANGELOG,
+              "uploaded_file": {
+                  "uuid":          upload_id,
+                  "original_filename": file_name,
+                  "content_preview_link": None,
+              },
+          }
+
+          result = nexus_request(
+              "POST",
+              f"/games/{GAME_DOMAIN}/mods/{MOD_ID}/files/add_file.json",
+              data=payload,
+          )
+
+          file_id = result.get("file_id") or result.get("id")
+          print(f"✓ Upload complete! Nexus file ID: {file_id}", flush=True)
+          print(f"  https://www.nexusmods.com/{GAME_DOMAIN}/mods/{MOD_ID}?tab=files", flush=True)
