@@ -1,6 +1,8 @@
 <Solution>
   <SolutionItem Path=".copilot-instructions" />
+  <Folder Name="/Solution Items/">
+    <File Path=".github/workflows/upload-to-nexus.yml" />
+  </Folder>
   <Project Path="MegastoreSimulator.GameLibs.Tests/MegastoreSimulator.GameLibs.Tests.csproj" Id="6f3245db-eb88-4c8b-b495-2cd24429b396" />
   <Project Path="MegastoreSimulator.GameLibs/MegastoreSimulator.GameLibs.csproj" Id="e4a42a76-b90c-4aa3-af76-d7ca2bf257cb" />
-  <Project Path="SalesNumbersPlugin/SalesNumbersPlugin.csproj" Id="c36fa23b-73a3-48a8-8c98-c6df694b60a3" />
 </Solution>
